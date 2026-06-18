@@ -237,7 +237,7 @@ class InputMethodManager: ObservableObject {
         let currentID = getInputSourceID(currentSource)
         guard currentID != lockedInputSourceID else { return }
 
-        if shouldAllowTemporaryInputSource(currentSource, whileLockedTo: lockedInputSourceID) {
+        if shouldAllowCapsLockTemporaryInputSource(currentSource, whileLockedTo: lockedInputSourceID) {
             refreshLockedInputSource()
             return
         }
@@ -261,7 +261,8 @@ class InputMethodManager: ObservableObject {
         }
     }
 
-    private func shouldAllowTemporaryInputSource(_ source: TISInputSource, whileLockedTo lockedInputSourceID: String) -> Bool {
+    private func shouldAllowCapsLockTemporaryInputSource(_ source: TISInputSource, whileLockedTo lockedInputSourceID: String) -> Bool {
+        guard NSEvent.modifierFlags.contains(.capsLock) else { return false }
         guard isKeyboardLayout(source), isASCIICapableInputSource(source) else { return false }
         guard let lockedSource = inputSource(withID: lockedInputSourceID) else { return false }
 
