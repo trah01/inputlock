@@ -15,6 +15,11 @@
 /* Settings */
 "settings.launchAtLogin" = "开机启动";
 "settings.restorePreviousLockState" = "恢复上次锁定状态";
+"settings.temporaryABCShortcut" = "临时 ABC 快捷键";
+"settings.setShortcut" = "设置快捷键";
+"settings.recordingShortcut" = "按下组合键";
+"settings.clearShortcut" = "清除快捷键";
+"settings.temporaryABCHint" = "触发后切到 ABC，15 秒后空闲时恢复锁定输入法。";
 "settings.language" = "语言";
 
 /* Languages */

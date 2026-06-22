@@ -15,6 +15,11 @@
 /* Settings */
 "settings.launchAtLogin" = "Launch at Login";
 "settings.restorePreviousLockState" = "Restore Previous Lock";
+"settings.temporaryABCShortcut" = "Temporary ABC Shortcut";
+"settings.setShortcut" = "Set Shortcut";
+"settings.recordingShortcut" = "Press Shortcut";
+"settings.clearShortcut" = "Clear Shortcut";
+"settings.temporaryABCHint" = "Switches to ABC, then restores the locked input when idle after 15 seconds.";
 "settings.language" = "Language";
 
 /* Languages */

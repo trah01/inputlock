@@ -25,9 +25,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var popover: NSPopover!
     var inputManager = InputMethodManager.shared
     var languageManager = LanguageManager.shared
+    var shortcutManager = GlobalShortcutManager.shared
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        shortcutManager.start()
         setupStatusBar()
         setupPopover()
 
@@ -58,7 +60,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func setupPopover() {
         popover = NSPopover()
-        popover.contentSize = NSSize(width: 280, height: 390)
+        popover.contentSize = NSSize(width: 280, height: 450)
         popover.behavior = .transient
         popover.contentViewController = NSHostingController(rootView: ContentView())
     }

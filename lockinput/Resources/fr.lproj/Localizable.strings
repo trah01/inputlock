@@ -15,6 +15,11 @@
 /* Settings */
 "settings.launchAtLogin" = "Lancer au démarrage";
 "settings.restorePreviousLockState" = "Restaurer le verrouillage";
+"settings.temporaryABCShortcut" = "Raccourci ABC temporaire";
+"settings.setShortcut" = "Définir le raccourci";
+"settings.recordingShortcut" = "Appuyez sur le raccourci";
+"settings.clearShortcut" = "Effacer le raccourci";
+"settings.temporaryABCHint" = "Passe à ABC, puis restaure la saisie verrouillée après 15 s d'inactivité.";
 "settings.language" = "Langue";
 
 /* Languages */

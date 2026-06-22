@@ -15,6 +15,11 @@
 /* Settings */
 "settings.launchAtLogin" = "ログイン時に起動";
 "settings.restorePreviousLockState" = "前回のロックを復元";
+"settings.temporaryABCShortcut" = "一時 ABC ショートカット";
+"settings.setShortcut" = "ショートカットを設定";
+"settings.recordingShortcut" = "ショートカットを押す";
+"settings.clearShortcut" = "ショートカットを消去";
+"settings.temporaryABCHint" = "ABC に切り替え、15 秒後に入力が止まるとロック中の入力に戻します。";
 "settings.language" = "言語";
 
 /* Languages */

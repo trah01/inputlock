@@ -10,6 +10,7 @@ LockInput est une application légère pour la barre de menus de macOS. Elle ver
 
 - Verrouille la méthode de saisie active et la rétablit si une autre source devient active
 - Utilise automatiquement une disposition ABC/ASCII temporaire dans les champs de saisie sécurisée macOS, comme les mots de passe
+- Prend en charge un raccourci personnalisé pour passer temporairement à ABC et rétablir la source verrouillée après 15 s d'inactivité
 - Fonctionne dans la barre de menus, sans icône dans le Dock
 - Clic gauche pour ouvrir le panneau des méthodes de saisie ; clic droit pour les actions rapides
 - Prend en charge English, 简体中文, Français, Deutsch et 日本語
@@ -38,6 +39,7 @@ La version actuelle n'est pas notariée par Apple. Si macOS bloque le premier la
 - Clic sur une méthode de saisie : basculer vers cette méthode et la verrouiller
 - Bouton Verrouiller / Déverrouiller : verrouiller la source active ou libérer le verrou
 - Dans les champs de saisie sécurisée comme les mots de passe, l'app passe automatiquement en ABC/ASCII temporaire ; la source verrouillée est rétablie après la sortie de la saisie sécurisée
+- Définissez le raccourci ABC temporaire en bas du panneau, puis utilisez-le pour passer à ABC ; après 15 s, l'app rétablit la source verrouillée si la saisie s'est arrêtée, sinon elle ne change rien
 - Menu de langue en bas du panneau : changer la langue de l'interface
 - Option de lancement à l'ouverture de session : démarrer l'application automatiquement sous macOS 13.0+
 

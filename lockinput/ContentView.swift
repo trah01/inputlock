@@ -19,8 +19,11 @@ private enum AppTypography {
 struct ContentView: View {
     @ObservedObject var inputManager = InputMethodManager.shared
     @ObservedObject var languageManager = LanguageManager.shared
+    @ObservedObject var shortcutManager = GlobalShortcutManager.shared
     @AppStorage("launchAtLogin") var launchAtLogin = false
     @AppStorage("restorePreviousLockState") var restorePreviousLockState = false
+    @State private var isRecordingShortcut = false
+    @State private var shortcutRecordingMonitors: [Any] = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -35,6 +38,9 @@ struct ContentView: View {
             footerView
         }
         .frame(width: 280)
+        .onDisappear {
+            stopShortcutRecording()
+        }
     }
 
     var headerView: some View {
@@ -151,8 +157,54 @@ struct ContentView: View {
 
                 Spacer()
             }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("settings.temporaryABCShortcut".localized(with: languageManager))
+                    .font(AppTypography.control)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+
+                HStack(spacing: 6) {
+                    Button(action: {
+                        startShortcutRecording()
+                    }) {
+                        Label(shortcutButtonTitle, systemImage: "keyboard")
+                            .font(AppTypography.control)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.85)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button(action: {
+                        shortcutManager.clearShortcut()
+                        stopShortcutRecording()
+                    }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 11, weight: .semibold))
+                            .frame(width: 20, height: 20)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(shortcutManager.shortcut == nil && !isRecordingShortcut)
+                    .help("settings.clearShortcut".localized(with: languageManager))
+                }
+
+                Text("settings.temporaryABCHint".localized(with: languageManager))
+                    .font(.system(size: 10))
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .padding()
+    }
+
+    var shortcutButtonTitle: String {
+        if isRecordingShortcut {
+            return "settings.recordingShortcut".localized(with: languageManager)
+        }
+
+        return shortcutManager.shortcut?.displayText
+            ?? "settings.setShortcut".localized(with: languageManager)
     }
 
     func isCurrentSource(_ source: TISInputSource) -> Bool {
@@ -176,6 +228,48 @@ struct ContentView: View {
                 print("Failed to set launch at login: \(error)")
             }
         }
+    }
+
+    func startShortcutRecording() {
+        stopShortcutRecording()
+        isRecordingShortcut = true
+
+        let keyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            if event.keyCode == 53 {
+                stopShortcutRecording()
+                return nil
+            }
+
+            if event.keyCode == 51 {
+                shortcutManager.clearShortcut()
+                stopShortcutRecording()
+                return nil
+            }
+
+            if shortcutManager.updateShortcut(from: event) {
+                stopShortcutRecording()
+            }
+            return nil
+        }
+
+        let flagsChangedMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { event in
+            if shortcutManager.updateShortcut(from: event) {
+                stopShortcutRecording()
+                return nil
+            }
+
+            return event
+        }
+
+        shortcutRecordingMonitors = [keyDownMonitor, flagsChangedMonitor].compactMap { $0 }
+    }
+
+    func stopShortcutRecording() {
+        for monitor in shortcutRecordingMonitors {
+            NSEvent.removeMonitor(monitor)
+        }
+        shortcutRecordingMonitors.removeAll()
+        isRecordingShortcut = false
     }
 }
 
