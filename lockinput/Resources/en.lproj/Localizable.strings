@@ -1,6 +1,9 @@
 /* Status */
 "status.locked" = "Locked";
 "status.unlocked" = "Unlocked";
+"status.temporaryABC" = "Temporary Input";
+"status.lockedInput" = "Locked";
+"status.currentInput" = "Current";
 
 /* Buttons */
 "button.lock" = "Lock";
@@ -10,17 +13,23 @@
 /* Menu */
 "menu.lockCurrent" = "Lock Current Input";
 "menu.unlock" = "Unlock Input";
+"menu.settings" = "Settings";
 "menu.quit" = "Quit";
 
 /* Settings */
+"settings.title" = "Settings";
 "settings.launchAtLogin" = "Launch at Login";
-"settings.restorePreviousLockState" = "Restore Previous Lock";
-"settings.temporaryABCShortcut" = "Temporary ABC Shortcut";
+"settings.restorePreviousLockState" = "Restore Last Lock After Restart";
+"settings.temporaryInputShortcut" = "Temporary Input Shortcut";
+"settings.temporaryInputSource" = "Switch to";
+"settings.temporaryInputSourceAutomatic" = "Auto-select ABC/US";
 "settings.setShortcut" = "Set Shortcut";
 "settings.recordingShortcut" = "Press Shortcut";
 "settings.clearShortcut" = "Clear Shortcut";
-"settings.temporaryABCHint" = "Switches to ABC, then restores the locked input when idle after 15 seconds.";
+"settings.temporaryInputHint" = "Temporarily switches to the selected input. Press again to restore now, or stay idle for 5 seconds.";
 "settings.language" = "Language";
+"settings.about" = "About";
+"settings.projectLink" = "Project Homepage";
 
 /* Languages */
 "language.system" = "System Default";

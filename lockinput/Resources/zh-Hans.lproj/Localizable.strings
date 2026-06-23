@@ -1,6 +1,9 @@
 /* Status */
 "status.locked" = "已锁定";
 "status.unlocked" = "未锁定";
+"status.temporaryABC" = "临时输入法";
+"status.lockedInput" = "锁定";
+"status.currentInput" = "当前";
 
 /* Buttons */
 "button.lock" = "锁定";
@@ -10,17 +13,23 @@
 /* Menu */
 "menu.lockCurrent" = "锁定当前输入法";
 "menu.unlock" = "解锁输入法";
+"menu.settings" = "设置";
 "menu.quit" = "退出";
 
 /* Settings */
+"settings.title" = "设置";
 "settings.launchAtLogin" = "开机启动";
-"settings.restorePreviousLockState" = "恢复上次锁定状态";
-"settings.temporaryABCShortcut" = "临时 ABC 快捷键";
+"settings.restorePreviousLockState" = "重启后恢复上次锁定";
+"settings.temporaryInputShortcut" = "临时切换快捷键";
+"settings.temporaryInputSource" = "切换到";
+"settings.temporaryInputSourceAutomatic" = "自动选择 ABC/US";
 "settings.setShortcut" = "设置快捷键";
 "settings.recordingShortcut" = "按下组合键";
 "settings.clearShortcut" = "清除快捷键";
-"settings.temporaryABCHint" = "触发后切到 ABC，15 秒后空闲时恢复锁定输入法。";
+"settings.temporaryInputHint" = "触发后临时切到指定输入法；再按一次立即恢复，空闲 5 秒后也会自动恢复。";
 "settings.language" = "语言";
+"settings.about" = "关于";
+"settings.projectLink" = "项目主页";
 
 /* Languages */
 "language.system" = "跟随系统";

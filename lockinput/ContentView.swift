@@ -7,23 +7,19 @@
 
 import SwiftUI
 import Carbon
-import ServiceManagement
 
-private enum AppTypography {
-    static let status = Font.system(size: 14, weight: .semibold)
+enum AppTypography {
+    static let status = Font.system(size: 13, weight: .semibold)
     static let primary = Font.system(size: 13)
     static let secondary = Font.system(size: 12)
     static let control = Font.system(size: 12)
+    static let caption = Font.system(size: 10)
 }
 
 struct ContentView: View {
     @ObservedObject var inputManager = InputMethodManager.shared
     @ObservedObject var languageManager = LanguageManager.shared
-    @ObservedObject var shortcutManager = GlobalShortcutManager.shared
-    @AppStorage("launchAtLogin") var launchAtLogin = false
-    @AppStorage("restorePreviousLockState") var restorePreviousLockState = false
-    @State private var isRecordingShortcut = false
-    @State private var shortcutRecordingMonitors: [Any] = []
+    var openSettings: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 0) {
@@ -35,34 +31,22 @@ struct ContentView: View {
 
             Divider()
 
-            footerView
+            settingsEntry
         }
-        .frame(width: 280)
-        .onDisappear {
-            stopShortcutRecording()
-        }
+        .frame(width: 260)
     }
 
     var headerView: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 7) {
             HStack {
-                Image(systemName: inputManager.isLocked ? "lock.fill" : "lock.open")
-                    .font(.system(size: 24))
-                    .foregroundColor(inputManager.isLocked ? .green : .secondary)
+                Image(systemName: headerIconName)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(headerIconColor)
+                    .frame(width: 22)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(inputManager.isLocked
-                         ? "status.locked".localized(with: languageManager)
-                         : "status.unlocked".localized(with: languageManager))
-                        .font(AppTypography.status)
-                        .lineLimit(1)
-
-                    Text(inputManager.currentInputSourceName)
-                        .font(AppTypography.secondary)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                }
+                Text(statusTitle)
+                    .font(AppTypography.status)
+                    .lineLimit(1)
 
                 Spacer()
 
@@ -74,13 +58,25 @@ struct ContentView: View {
                          : "button.lock".localized(with: languageManager))
                         .font(AppTypography.control)
                         .lineLimit(1)
-                        .frame(width: 64)
+                        .frame(width: 54)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(inputManager.isLocked ? .orange : .blue)
+                .tint(inputManager.isLocked ? .gray : .accentColor)
+            }
+
+            VStack(spacing: 4) {
+                sourceSummaryRow(
+                    label: "status.lockedInput".localized(with: languageManager),
+                    value: lockedInputSourceName
+                )
+                sourceSummaryRow(
+                    label: "status.currentInput".localized(with: languageManager),
+                    value: inputManager.currentInputSourceName
+                )
             }
         }
-        .padding()
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
     }
 
     var inputSourceList: some View {
@@ -96,115 +92,84 @@ struct ContentView: View {
                     }
                 }
             }
+            .padding(.vertical, 6)
+        }
+        .frame(maxHeight: 142)
+    }
+
+    var settingsEntry: some View {
+        Button(action: openSettings) {
+            HStack {
+                Label("menu.settings".localized(with: languageManager), systemImage: "gearshape")
+                    .font(AppTypography.control)
+                    .lineLimit(1)
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 12)
             .padding(.vertical, 8)
+            .contentShape(Rectangle())
         }
-        .frame(maxHeight: 180)
+        .buttonStyle(.plain)
     }
 
-    var footerView: some View {
-        VStack(spacing: 8) {
-            HStack {
-                Text("settings.language".localized(with: languageManager))
-                    .font(AppTypography.control)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
+    var statusTitle: String {
+        if inputManager.isTemporarilyUsingABC {
+            return "status.temporaryABC".localized(with: languageManager)
+        }
 
-                Spacer()
+        return inputManager.isLocked
+            ? "status.locked".localized(with: languageManager)
+            : "status.unlocked".localized(with: languageManager)
+    }
 
-                Picker("", selection: $languageManager.currentLanguage) {
-                    ForEach(AppLanguage.allCases) { language in
-                        Text(language.displayName).tag(language)
-                    }
-                }
-                .pickerStyle(.menu)
-                .frame(width: 120)
-                .font(AppTypography.control)
-            }
+    var headerIconName: String {
+        if inputManager.isTemporarilyUsingABC {
+            return "keyboard"
+        }
 
-            HStack {
-                Toggle(isOn: $launchAtLogin) {
-                    Label("settings.launchAtLogin".localized(with: languageManager), systemImage: "power")
-                        .font(AppTypography.control)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.85)
-                }
-                .toggleStyle(.checkbox)
-                .onChange(of: launchAtLogin) { newValue in
-                    setLaunchAtLogin(newValue)
-                }
+        return inputManager.isLocked ? "lock.fill" : "lock.open"
+    }
 
-                Spacer()
+    var headerIconColor: Color {
+        if inputManager.isTemporarilyUsingABC {
+            return .accentColor
+        }
 
-                Button(action: {
-                    NSApp.terminate(nil)
-                }) {
-                    Label("button.quit".localized(with: languageManager), systemImage: "xmark.circle")
-                        .font(AppTypography.control)
-                        .lineLimit(1)
-                }
-                .buttonStyle(.plain)
+        return inputManager.isLocked ? .accentColor : .secondary
+    }
+
+    var lockedInputSourceName: String {
+        guard inputManager.isLocked else {
+            return "status.unlocked".localized(with: languageManager)
+        }
+
+        guard let source = inputManager.lockedInputSource else {
+            return "Unknown"
+        }
+
+        return inputManager.getInputSourceName(source)
+    }
+
+    func sourceSummaryRow(label: String, value: String) -> some View {
+        HStack(spacing: 8) {
+            Text(label)
+                .font(AppTypography.caption)
                 .foregroundColor(.secondary)
-            }
+                .frame(width: 38, alignment: .leading)
 
-            HStack {
-                Toggle(isOn: $restorePreviousLockState) {
-                    Label("settings.restorePreviousLockState".localized(with: languageManager), systemImage: "arrow.clockwise")
-                        .font(AppTypography.control)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.85)
-                }
-                .toggleStyle(.checkbox)
+            Text(value)
+                .font(AppTypography.secondary)
+                .foregroundColor(.primary)
+                .lineLimit(1)
+                .truncationMode(.tail)
 
-                Spacer()
-            }
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text("settings.temporaryABCShortcut".localized(with: languageManager))
-                    .font(AppTypography.control)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-
-                HStack(spacing: 6) {
-                    Button(action: {
-                        startShortcutRecording()
-                    }) {
-                        Label(shortcutButtonTitle, systemImage: "keyboard")
-                            .font(AppTypography.control)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.85)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .buttonStyle(.bordered)
-
-                    Button(action: {
-                        shortcutManager.clearShortcut()
-                        stopShortcutRecording()
-                    }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 11, weight: .semibold))
-                            .frame(width: 20, height: 20)
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(shortcutManager.shortcut == nil && !isRecordingShortcut)
-                    .help("settings.clearShortcut".localized(with: languageManager))
-                }
-
-                Text("settings.temporaryABCHint".localized(with: languageManager))
-                    .font(.system(size: 10))
-                    .foregroundColor(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            Spacer(minLength: 0)
         }
-        .padding()
-    }
-
-    var shortcutButtonTitle: String {
-        if isRecordingShortcut {
-            return "settings.recordingShortcut".localized(with: languageManager)
-        }
-
-        return shortcutManager.shortcut?.displayText
-            ?? "settings.setShortcut".localized(with: languageManager)
     }
 
     func isCurrentSource(_ source: TISInputSource) -> Bool {
@@ -214,62 +179,6 @@ struct ContentView: View {
 
     func isLockedSource(_ source: TISInputSource) -> Bool {
         inputManager.getInputSourceID(source) == inputManager.lockedInputSourceID
-    }
-
-    func setLaunchAtLogin(_ enabled: Bool) {
-        if #available(macOS 13.0, *) {
-            do {
-                if enabled {
-                    try SMAppService.mainApp.register()
-                } else {
-                    try SMAppService.mainApp.unregister()
-                }
-            } catch {
-                print("Failed to set launch at login: \(error)")
-            }
-        }
-    }
-
-    func startShortcutRecording() {
-        stopShortcutRecording()
-        isRecordingShortcut = true
-
-        let keyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            if event.keyCode == 53 {
-                stopShortcutRecording()
-                return nil
-            }
-
-            if event.keyCode == 51 {
-                shortcutManager.clearShortcut()
-                stopShortcutRecording()
-                return nil
-            }
-
-            if shortcutManager.updateShortcut(from: event) {
-                stopShortcutRecording()
-            }
-            return nil
-        }
-
-        let flagsChangedMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { event in
-            if shortcutManager.updateShortcut(from: event) {
-                stopShortcutRecording()
-                return nil
-            }
-
-            return event
-        }
-
-        shortcutRecordingMonitors = [keyDownMonitor, flagsChangedMonitor].compactMap { $0 }
-    }
-
-    func stopShortcutRecording() {
-        for monitor in shortcutRecordingMonitors {
-            NSEvent.removeMonitor(monitor)
-        }
-        shortcutRecordingMonitors.removeAll()
-        isRecordingShortcut = false
     }
 }
 
@@ -285,7 +194,7 @@ struct InputSourceRow: View {
         Button(action: action) {
             HStack {
                 Image(systemName: isLocked ? "lock.fill" : "keyboard")
-                    .foregroundColor(isLocked ? .green : .secondary)
+                    .foregroundColor(isLocked ? .accentColor : .secondary)
                     .frame(width: 20)
 
                 Text(inputManager.getInputSourceName(source))
@@ -298,12 +207,12 @@ struct InputSourceRow: View {
 
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.accentColor)
                 }
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(isSelected ? Color.blue.opacity(0.1) : Color.clear)
+            .padding(.vertical, 5)
+            .background(isSelected ? Color.accentColor.opacity(0.12) : Color.clear)
             .cornerRadius(6)
         }
         .buttonStyle(.plain)

@@ -9,6 +9,9 @@ import Combine
 
 struct KeyboardShortcut: Equatable {
     private static let globeKeyCode: UInt32 = 63
+    private static let capsLockKeyCode: UInt32 = 57
+    private static let leftShiftKeyCode: UInt32 = 56
+    private static let rightShiftKeyCode: UInt32 = 60
 
     let keyCode: UInt32
     let modifiers: UInt32
@@ -18,8 +21,20 @@ struct KeyboardShortcut: Equatable {
         keyCode == Self.globeKeyCode && modifiers == 0
     }
 
+    var isCapsLockOnly: Bool {
+        keyCode == Self.capsLockKeyCode && modifiers == 0
+    }
+
+    var isShiftOnly: Bool {
+        Self.isShiftKeyCode(keyCode) && modifiers == 0
+    }
+
+    var usesFlagsChangedMonitor: Bool {
+        isGlobe || isCapsLockOnly || isShiftOnly
+    }
+
     var displayText: String {
-        if isGlobe {
+        if usesFlagsChangedMonitor {
             return keyDisplay
         }
 
@@ -41,6 +56,10 @@ struct KeyboardShortcut: Equatable {
         parts.append(keyDisplay)
         return parts.joined(separator: " + ")
     }
+
+    static func isShiftKeyCode(_ keyCode: UInt32) -> Bool {
+        keyCode == leftShiftKeyCode || keyCode == rightShiftKeyCode
+    }
 }
 
 final class GlobalShortcutManager: ObservableObject {
@@ -59,9 +78,10 @@ final class GlobalShortcutManager: ObservableObject {
 
     private var hotKeyRef: EventHotKeyRef?
     private var eventHandlerRef: EventHandlerRef?
-    private var globeGlobalMonitor: Any?
-    private var globeLocalMonitor: Any?
-    private var isGlobePressed = false
+    private var modifierGlobalMonitor: Any?
+    private var modifierLocalMonitor: Any?
+    private var isModifierShortcutPressed = false
+    private var lastCapsLockShortcutAt = Date.distantPast
 
     private init() {
         shortcut = Self.loadShortcut()
@@ -69,7 +89,7 @@ final class GlobalShortcutManager: ObservableObject {
 
     deinit {
         unregisterShortcut()
-        stopGlobeMonitors()
+        stopModifierMonitors()
         if let eventHandlerRef {
             RemoveEventHandler(eventHandlerRef)
         }
@@ -98,10 +118,11 @@ final class GlobalShortcutManager: ObservableObject {
         UserDefaults.standard.removeObject(forKey: DefaultsKey.modifiers)
         UserDefaults.standard.removeObject(forKey: DefaultsKey.keyDisplay)
         unregisterShortcut()
+        stopModifierMonitors()
     }
 
     func handleHotKeyPressed() {
-        InputMethodManager.shared.switchTemporarilyToABC()
+        InputMethodManager.shared.switchTemporarilyToSelectedInputSource()
     }
 
     private static func loadShortcut() -> KeyboardShortcut? {
@@ -161,11 +182,11 @@ final class GlobalShortcutManager: ObservableObject {
 
     private func registerStoredShortcut() {
         unregisterShortcut()
-        stopGlobeMonitors()
+        stopModifierMonitors()
         guard let shortcut else { return }
 
-        if shortcut.isGlobe {
-            startGlobeMonitors()
+        if shortcut.usesFlagsChangedMonitor {
+            startModifierMonitors()
             return
         }
 
@@ -191,43 +212,58 @@ final class GlobalShortcutManager: ObservableObject {
         }
     }
 
-    private func startGlobeMonitors() {
-        guard globeGlobalMonitor == nil, globeLocalMonitor == nil else { return }
+    private func startModifierMonitors() {
+        guard modifierGlobalMonitor == nil, modifierLocalMonitor == nil else { return }
 
-        globeGlobalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+        modifierGlobalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             DispatchQueue.main.async {
-                self?.handleGlobeFlagsChanged(event)
+                self?.handleModifierFlagsChanged(event)
             }
         }
 
-        globeLocalMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
-            self?.handleGlobeFlagsChanged(event)
+        modifierLocalMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            self?.handleModifierFlagsChanged(event)
             return event
         }
     }
 
-    private func stopGlobeMonitors() {
-        if let globeGlobalMonitor {
-            NSEvent.removeMonitor(globeGlobalMonitor)
-            self.globeGlobalMonitor = nil
+    private func stopModifierMonitors() {
+        if let modifierGlobalMonitor {
+            NSEvent.removeMonitor(modifierGlobalMonitor)
+            self.modifierGlobalMonitor = nil
         }
 
-        if let globeLocalMonitor {
-            NSEvent.removeMonitor(globeLocalMonitor)
-            self.globeLocalMonitor = nil
+        if let modifierLocalMonitor {
+            NSEvent.removeMonitor(modifierLocalMonitor)
+            self.modifierLocalMonitor = nil
         }
 
-        isGlobePressed = false
+        isModifierShortcutPressed = false
     }
 
-    private func handleGlobeFlagsChanged(_ event: NSEvent) {
-        guard shortcut?.isGlobe == true, event.isGlobeKeyEvent else { return }
+    private func handleModifierFlagsChanged(_ event: NSEvent) {
+        guard let shortcut,
+              shortcut.usesFlagsChangedMonitor,
+              event.isRelevantModifierShortcutEvent(shortcut) else { return }
 
-        let isPressed = event.modifierFlags.contains(.function)
-        if isPressed, !isGlobePressed {
+        let isPressed = event.matchesModifierOnlyShortcut(shortcut)
+        if shortcut.isCapsLockOnly, isPressed {
+            triggerCapsLockShortcutIfNeeded()
+            return
+        }
+
+        if isPressed, !isModifierShortcutPressed {
             handleHotKeyPressed()
         }
-        isGlobePressed = isPressed
+        isModifierShortcutPressed = isPressed
+    }
+
+    private func triggerCapsLockShortcutIfNeeded() {
+        let now = Date()
+        guard now.timeIntervalSince(lastCapsLockShortcutAt) > 0.2 else { return }
+
+        lastCapsLockShortcutAt = now
+        handleHotKeyPressed()
     }
 }
 
@@ -237,6 +273,20 @@ extension KeyboardShortcut {
             self.keyCode = 63
             self.modifiers = 0
             self.keyDisplay = "Globe"
+            return
+        }
+
+        if event.isCapsLockKeyEvent {
+            self.keyCode = UInt32(event.keyCode)
+            self.modifiers = 0
+            self.keyDisplay = "Caps Lock"
+            return
+        }
+
+        if event.isShiftOnlyPressedEvent {
+            self.keyCode = UInt32(event.keyCode)
+            self.modifiers = 0
+            self.keyDisplay = "Shift"
             return
         }
 
@@ -301,7 +351,51 @@ private extension NSEvent {
         keyCode == 63
     }
 
+    var isCapsLockKeyEvent: Bool {
+        keyCode == 57
+    }
+
+    var isShiftKeyEvent: Bool {
+        KeyboardShortcut.isShiftKeyCode(UInt32(keyCode))
+    }
+
     var isGlobePressedEvent: Bool {
         isGlobeKeyEvent && modifierFlags.contains(.function)
+    }
+
+    var isShiftOnlyPressedEvent: Bool {
+        isShiftKeyEvent && modifierFlags.contains(.shift)
+    }
+
+    func isRelevantModifierShortcutEvent(_ shortcut: KeyboardShortcut) -> Bool {
+        if shortcut.isGlobe {
+            return isGlobeKeyEvent
+        }
+
+        if shortcut.isCapsLockOnly {
+            return isCapsLockKeyEvent
+        }
+
+        if shortcut.isShiftOnly {
+            return isShiftKeyEvent
+        }
+
+        return false
+    }
+
+    func matchesModifierOnlyShortcut(_ shortcut: KeyboardShortcut) -> Bool {
+        if shortcut.isGlobe {
+            return isGlobePressedEvent
+        }
+
+        if shortcut.isCapsLockOnly {
+            return isCapsLockKeyEvent
+        }
+
+        if shortcut.isShiftOnly {
+            return isShiftOnlyPressedEvent
+        }
+
+        return false
     }
 }

@@ -1,6 +1,9 @@
 /* Status */
 "status.locked" = "Gesperrt";
 "status.unlocked" = "Entsperrt";
+"status.temporaryABC" = "Temporäre Eingabe";
+"status.lockedInput" = "Sperre";
+"status.currentInput" = "Aktuell";
 
 /* Buttons */
 "button.lock" = "Sperren";
@@ -10,17 +13,23 @@
 /* Menu */
 "menu.lockCurrent" = "Aktuelle Eingabe sperren";
 "menu.unlock" = "Eingabe entsperren";
+"menu.settings" = "Einstellungen";
 "menu.quit" = "Beenden";
 
 /* Settings */
+"settings.title" = "Einstellungen";
 "settings.launchAtLogin" = "Beim Anmelden starten";
-"settings.restorePreviousLockState" = "Vorherige Sperre wiederherstellen";
-"settings.temporaryABCShortcut" = "Temporärer ABC-Kurzbefehl";
+"settings.restorePreviousLockState" = "Letzte Sperre nach Neustart wiederherstellen";
+"settings.temporaryInputShortcut" = "Temporärer Eingabe-Kurzbefehl";
+"settings.temporaryInputSource" = "Wechseln zu";
+"settings.temporaryInputSourceAutomatic" = "ABC/US automatisch wählen";
 "settings.setShortcut" = "Kurzbefehl festlegen";
 "settings.recordingShortcut" = "Kurzbefehl drücken";
 "settings.clearShortcut" = "Kurzbefehl löschen";
-"settings.temporaryABCHint" = "Wechselt zu ABC und stellt die Sperre nach 15 s Leerlauf wieder her.";
+"settings.temporaryInputHint" = "Wechselt temporär zur gewählten Eingabe. Erneut drücken zum Wiederherstellen oder 5 s Leerlauf warten.";
 "settings.language" = "Sprache";
+"settings.about" = "Über";
+"settings.projectLink" = "Projektseite";
 
 /* Languages */
 "language.system" = "Systemstandard";

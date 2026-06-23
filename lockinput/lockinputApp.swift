@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import ServiceManagement
 import Combine
 
 @main
@@ -15,7 +14,7 @@ struct lockinputApp: App {
 
     var body: some Scene {
         Settings {
-            EmptyView()
+            SettingsView()
         }
     }
 }
@@ -26,20 +25,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var inputManager = InputMethodManager.shared
     var languageManager = LanguageManager.shared
     var shortcutManager = GlobalShortcutManager.shared
+    private var settingsWindow: NSWindow?
+    private var settingsShortcutMonitor: Any?
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         shortcutManager.start()
         setupStatusBar()
         setupPopover()
+        setupSettingsShortcut()
 
         NSApp.setActivationPolicy(.accessory)
     }
 
+    func applicationWillTerminate(_ notification: Notification) {
+        if let settingsShortcutMonitor {
+            NSEvent.removeMonitor(settingsShortcutMonitor)
+            self.settingsShortcutMonitor = nil
+        }
+    }
+
     func setupStatusBar() {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
         if let button = statusItem.button {
+            button.imagePosition = .imageOnly
             updateStatusBarIcon()
             button.action = #selector(togglePopover)
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
@@ -54,15 +64,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let button = statusItem.button {
             let symbolName = inputManager.isLocked ? "lock.fill" : "lock.open"
             let accessibilityDesc = "accessibility.lockIcon".localized(with: languageManager)
-            button.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: accessibilityDesc)
+            let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: accessibilityDesc)
+            image?.size = NSSize(width: 16, height: 16)
+            image?.isTemplate = true
+            button.image = image
         }
     }
 
     func setupPopover() {
         popover = NSPopover()
-        popover.contentSize = NSSize(width: 280, height: 450)
+        popover.contentSize = NSSize(width: 260, height: 300)
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: ContentView())
+        popover.contentViewController = NSHostingController(rootView: ContentView(openSettings: { [weak self] in
+            self?.openSettings()
+        }))
+    }
+
+    func setupSettingsShortcut() {
+        settingsShortcutMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+            if event.keyCode == 43, flags == .command {
+                self?.openSettings()
+                return nil
+            }
+
+            return event
+        }
     }
 
     @objc func togglePopover(_ sender: AnyObject?) {
@@ -98,6 +125,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
+        let settingsTitle = "menu.settings".localized(with: languageManager)
+        let settingsItem = NSMenuItem(title: settingsTitle, action: #selector(openSettings), keyEquivalent: ",")
+        settingsItem.keyEquivalentModifierMask = [.command]
+        menu.addItem(settingsItem)
+
         let quitTitle = "menu.quit".localized(with: languageManager)
         let quitItem = NSMenuItem(title: quitTitle, action: #selector(quit), keyEquivalent: "q")
         menu.addItem(quitItem)
@@ -109,6 +141,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func toggleLock() {
         inputManager.toggle()
+    }
+
+    @objc func openSettings() {
+        if popover.isShown {
+            popover.performClose(nil)
+        }
+
+        if settingsWindow == nil {
+            let hostingView = NSHostingView(rootView: SettingsView())
+            let window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 460, height: 520),
+                styleMask: [.titled, .closable, .miniaturizable],
+                backing: .buffered,
+                defer: false
+            )
+            window.contentView = hostingView
+            window.isReleasedWhenClosed = false
+            window.center()
+            settingsWindow = window
+        }
+
+        settingsWindow?.title = "settings.title".localized(with: languageManager)
+        settingsWindow?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     @objc func quit() {

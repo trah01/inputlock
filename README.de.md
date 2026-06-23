@@ -9,11 +9,13 @@ LockInput ist eine schlanke macOS-Menüleisten-App. Sie sperrt die aktuelle Eing
 ## Funktionen
 
 - Sperrt die aktuelle Eingabemethode und stellt sie wieder her, wenn eine andere Quelle aktiv wird
-- Unterstützt einen eigenen Kurzbefehl, der temporär zu ABC wechselt und nach 15 s Leerlauf die gesperrte Eingabe wiederherstellt
+- Unterstützt einen eigenen Kurzbefehl, der temporär zu einer gewählten Eingabe wechselt und nach 5 s Leerlauf die gesperrte Eingabe wiederherstellt
+- Unterstützt Globe, Caps Lock, Shift und normale Tastenkombinationen als temporären Wechselkurzbefehl
+- Bietet ein eigenes Einstellungsfenster über das Menüleistenfenster, das Kontextmenü oder `Command + ,`
 - Läuft in der Menüleiste, ohne Dock-Symbol
 - Linksklick öffnet die Eingabequellenliste; Rechtsklick öffnet Schnellaktionen
 - Unterstützt English, 简体中文, Français, Deutsch und 日本語
-- Unterstützt Start bei der Anmeldung unter macOS 13.0 oder neuer
+- Unterstützt Start bei der Anmeldung und Wiederherstellung der letzten Sperre nach einem Neustart
 
 ## Voraussetzungen
 
@@ -24,7 +26,7 @@ LockInput ist eine schlanke macOS-Menüleisten-App. Sie sperrt die aktuelle Eing
 
 Empfohlene Installation über GitHub Releases:
 
-1. Öffnen Sie die Seite [Releases](https://github.com/bigccc/inputlock/releases).
+1. Öffnen Sie die Seite [Releases](https://github.com/trah01/inputlock-extend/releases).
 2. Laden Sie die aktuelle Datei `LockInput-1.0.dmg` herunter.
 3. Öffnen Sie die DMG-Datei und ziehen Sie `lockinput.app` in `Applications`.
 4. Starten Sie LockInput aus `Applications`.
@@ -37,14 +39,16 @@ Die aktuelle Veröffentlichung ist nicht von Apple notarisiert. Wenn macOS den e
 - Rechtsklick auf das Schloss-Symbol: Schnellaktionsmenü öffnen
 - Klick auf eine Eingabemethode: zu dieser Methode wechseln und sie sperren
 - Schaltfläche Sperren / Entsperren: aktuelle Quelle sperren oder Sperre aufheben
-- Unten den temporären ABC-Kurzbefehl festlegen und drücken, um zu ABC zu wechseln; nach 15 s stellt die App die gesperrte Eingabe wieder her, wenn die Eingabe gestoppt wurde, andernfalls bleibt sie unverändert
-- Sprachmenü unten: Sprache der Oberfläche wechseln
+- Einstellungen unten im Hauptfenster oder mit `Command + ,` öffnen
+- Den temporären Wechselkurzbefehl und die Ziel-Eingabe in den Einstellungen festlegen; nach 5 s Leerlauf stellt die App die gesperrte Eingabe wieder her, andernfalls bleibt sie unverändert
+- Sprache der Oberfläche in den Einstellungen wechseln
 - Start bei der Anmeldung aktivieren: App unter macOS 13.0+ automatisch nach der Anmeldung starten
+- Letzte Sperre nach Neustart wiederherstellen aktivieren: Beim nächsten App-Start wird die zuletzt gesperrte Eingabe wiederhergestellt
 
 ## Aus dem Quellcode ausführen
 
 ```bash
-git clone https://github.com/bigccc/inputlock.git
+git clone https://github.com/trah01/inputlock-extend.git
 cd inputlock
 open lockinput.xcodeproj
 ```
@@ -87,6 +91,7 @@ LockInput-1.0.dmg
 lockinput/
 ├── lockinputApp.swift        # App-Einstieg und Menüleistenlogik
 ├── ContentView.swift         # Hauptoberfläche
+├── SettingsView.swift        # Einstellungsfenster
 ├── InputMethodManager.swift  # Erkennung, Wechsel und Sperrung der Eingabequellen
 ├── InputSourceLockState.swift # Modell für den Sperrzustand
 ├── LanguageManager.swift     # Sprachwechsel zur Laufzeit

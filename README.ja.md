@@ -9,11 +9,13 @@ LockInput は、現在の入力方式を固定する軽量な macOS メニュー
 ## 機能
 
 - 現在の入力方式を固定し、別の入力ソースに切り替わった場合は自動的に戻す
-- カスタムショートカットで一時的に ABC へ切り替え、15 秒後に入力が止まっていれば固定した入力方式へ戻す
+- カスタムショートカットで選択した入力方式へ一時的に切り替え、5 秒間入力が止まっていれば固定した入力方式へ戻す
+- Globe、Caps Lock、Shift、通常のキー組み合わせを一時切り替えショートカットとして使用可能
+- メニューバーパネル、コンテキストメニュー、または `Command + ,` から設定ウィンドウを開けます
 - Dock アイコンを表示せず、メニューバーで動作
 - 左クリックで入力ソース一覧を開き、右クリックでクイック操作を開く
 - English、简体中文、Français、Deutsch、日本語に対応
-- macOS 13.0 以降でログイン時に起動可能
+- ログイン時の起動と、再起動後の前回ロック復元に対応
 
 ## 必要環境
 
@@ -24,7 +26,7 @@ LockInput は、現在の入力方式を固定する軽量な macOS メニュー
 
 GitHub Releases からのインストールを推奨します。
 
-1. [Releases](https://github.com/bigccc/inputlock/releases) ページを開きます。
+1. [Releases](https://github.com/trah01/inputlock-extend/releases) ページを開きます。
 2. 最新の `LockInput-1.0.dmg` をダウンロードします。
 3. DMG を開き、`lockinput.app` を `Applications` にドラッグします。
 4. `Applications` から LockInput を起動します。
@@ -37,14 +39,16 @@ GitHub Releases からのインストールを推奨します。
 - メニューバーのロックアイコンを右クリック: クイック操作メニューを開く
 - 一覧内の入力方式をクリック: その入力方式に切り替えて固定する
 - 固定 / 解除ボタン: 現在の入力ソースを固定、または固定を解除
-- 下部で一時 ABC ショートカットを設定すると、押したときに ABC へ切り替わります。15 秒後に入力が止まっていれば固定した入力方式へ戻り、入力中ならそのまま維持します
-- 下部の言語メニュー: インターフェイス言語を変更
+- メインパネル下部の設定、または `Command + ,` で設定ウィンドウを開きます
+- 設定で一時切り替えショートカットと切り替え先入力方式を指定します。5 秒間入力が止まっていれば固定した入力方式へ戻り、入力中ならそのまま維持します
+- 設定でインターフェイス言語を変更
 - ログイン時に起動を有効化: macOS 13.0 以降でログイン後に自動起動
+- 再起動後に前回のロックを復元を有効化: 次回起動時に前回固定した入力方式を復元
 
 ## ソースから実行
 
 ```bash
-git clone https://github.com/bigccc/inputlock.git
+git clone https://github.com/trah01/inputlock-extend.git
 cd inputlock
 open lockinput.xcodeproj
 ```
@@ -87,6 +91,7 @@ LockInput-1.0.dmg
 lockinput/
 ├── lockinputApp.swift        # アプリのエントリーポイントとメニューバー設定
 ├── ContentView.swift         # メインパネル UI
+├── SettingsView.swift        # 設定ウィンドウ UI
 ├── InputMethodManager.swift  # 入力ソースの検出、切り替え、固定処理
 ├── InputSourceLockState.swift # 固定状態モデル
 ├── LanguageManager.swift     # 実行時の言語切り替え

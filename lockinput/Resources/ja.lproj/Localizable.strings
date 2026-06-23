@@ -1,6 +1,9 @@
 /* Status */
 "status.locked" = "ロック中";
 "status.unlocked" = "ロック解除";
+"status.temporaryABC" = "一時入力";
+"status.lockedInput" = "固定";
+"status.currentInput" = "現在";
 
 /* Buttons */
 "button.lock" = "ロック";
@@ -10,17 +13,23 @@
 /* Menu */
 "menu.lockCurrent" = "現在の入力をロック";
 "menu.unlock" = "入力のロックを解除";
+"menu.settings" = "設定";
 "menu.quit" = "終了";
 
 /* Settings */
+"settings.title" = "設定";
 "settings.launchAtLogin" = "ログイン時に起動";
-"settings.restorePreviousLockState" = "前回のロックを復元";
-"settings.temporaryABCShortcut" = "一時 ABC ショートカット";
+"settings.restorePreviousLockState" = "再起動後に前回のロックを復元";
+"settings.temporaryInputShortcut" = "一時入力ショートカット";
+"settings.temporaryInputSource" = "切り替え先";
+"settings.temporaryInputSourceAutomatic" = "ABC/US を自動選択";
 "settings.setShortcut" = "ショートカットを設定";
 "settings.recordingShortcut" = "ショートカットを押す";
 "settings.clearShortcut" = "ショートカットを消去";
-"settings.temporaryABCHint" = "ABC に切り替え、15 秒後に入力が止まるとロック中の入力に戻します。";
+"settings.temporaryInputHint" = "選択した入力に一時的に切り替えます。もう一度押すと戻り、5 秒の空き時間にも戻ります。";
 "settings.language" = "言語";
+"settings.about" = "情報";
+"settings.projectLink" = "プロジェクトページ";
 
 /* Languages */
 "language.system" = "システムのデフォルト";

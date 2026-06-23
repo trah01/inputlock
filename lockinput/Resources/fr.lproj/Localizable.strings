@@ -1,6 +1,9 @@
 /* Status */
 "status.locked" = "Verrouillé";
 "status.unlocked" = "Déverrouillé";
+"status.temporaryABC" = "Saisie temporaire";
+"status.lockedInput" = "Verrou";
+"status.currentInput" = "Actuel";
 
 /* Buttons */
 "button.lock" = "Verrouiller";
@@ -10,17 +13,23 @@
 /* Menu */
 "menu.lockCurrent" = "Verrouiller la saisie actuelle";
 "menu.unlock" = "Déverrouiller la saisie";
+"menu.settings" = "Réglages";
 "menu.quit" = "Quitter";
 
 /* Settings */
+"settings.title" = "Réglages";
 "settings.launchAtLogin" = "Lancer au démarrage";
-"settings.restorePreviousLockState" = "Restaurer le verrouillage";
-"settings.temporaryABCShortcut" = "Raccourci ABC temporaire";
+"settings.restorePreviousLockState" = "Restaurer le verrouillage après redémarrage";
+"settings.temporaryInputShortcut" = "Raccourci de saisie temporaire";
+"settings.temporaryInputSource" = "Basculer vers";
+"settings.temporaryInputSourceAutomatic" = "Choisir ABC/US automatiquement";
 "settings.setShortcut" = "Définir le raccourci";
 "settings.recordingShortcut" = "Appuyez sur le raccourci";
 "settings.clearShortcut" = "Effacer le raccourci";
-"settings.temporaryABCHint" = "Passe à ABC, puis restaure la saisie verrouillée après 15 s d'inactivité.";
+"settings.temporaryInputHint" = "Passe temporairement à la saisie choisie. Appuyez encore pour restaurer, ou attendez 5 s d'inactivité.";
 "settings.language" = "Langue";
+"settings.about" = "À propos";
+"settings.projectLink" = "Page du projet";
 
 /* Languages */
 "language.system" = "Par défaut du système";

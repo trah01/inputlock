@@ -9,11 +9,13 @@ LockInput est une application légère pour la barre de menus de macOS. Elle ver
 ## Fonctionnalités
 
 - Verrouille la méthode de saisie active et la rétablit si une autre source devient active
-- Prend en charge un raccourci personnalisé pour passer temporairement à ABC et rétablir la source verrouillée après 15 s d'inactivité
+- Prend en charge un raccourci personnalisé pour passer temporairement à une saisie choisie et rétablir la source verrouillée après 5 s d'inactivité
+- Prend en charge Globe, Caps Lock, Shift et les combinaisons classiques comme raccourci temporaire
+- Fournit une fenêtre de réglages accessible depuis le panneau de barre de menus, le menu contextuel ou `Command + ,`
 - Fonctionne dans la barre de menus, sans icône dans le Dock
 - Clic gauche pour ouvrir le panneau des méthodes de saisie ; clic droit pour les actions rapides
 - Prend en charge English, 简体中文, Français, Deutsch et 日本語
-- Prend en charge le lancement à l'ouverture de session sous macOS 13.0 ou version ultérieure
+- Prend en charge le lancement à l'ouverture de session et la restauration du dernier verrouillage après redémarrage
 
 ## Prérequis
 
@@ -24,7 +26,7 @@ LockInput est une application légère pour la barre de menus de macOS. Elle ver
 
 Installation recommandée depuis GitHub Releases :
 
-1. Ouvrez la page [Releases](https://github.com/bigccc/inputlock/releases).
+1. Ouvrez la page [Releases](https://github.com/trah01/inputlock-extend/releases).
 2. Téléchargez le dernier fichier `LockInput-1.0.dmg`.
 3. Ouvrez le DMG et faites glisser `lockinput.app` vers `Applications`.
 4. Lancez LockInput depuis `Applications`.
@@ -37,14 +39,16 @@ La version actuelle n'est pas notariée par Apple. Si macOS bloque le premier la
 - Clic droit sur l'icône : ouvrir le menu d'actions rapides
 - Clic sur une méthode de saisie : basculer vers cette méthode et la verrouiller
 - Bouton Verrouiller / Déverrouiller : verrouiller la source active ou libérer le verrou
-- Définissez le raccourci ABC temporaire en bas du panneau, puis utilisez-le pour passer à ABC ; après 15 s, l'app rétablit la source verrouillée si la saisie s'est arrêtée, sinon elle ne change rien
-- Menu de langue en bas du panneau : changer la langue de l'interface
+- Ouvrez les réglages depuis le bas du panneau principal ou avec `Command + ,`
+- Configurez le raccourci temporaire et la saisie cible dans les réglages ; après 5 s d'inactivité, l'app rétablit la source verrouillée, sinon elle ne change rien
+- Changez la langue de l'interface dans les réglages
 - Option de lancement à l'ouverture de session : démarrer l'application automatiquement sous macOS 13.0+
+- Option de restauration après redémarrage : restaurer la dernière saisie verrouillée au prochain lancement
 
 ## Exécuter depuis le code source
 
 ```bash
-git clone https://github.com/bigccc/inputlock.git
+git clone https://github.com/trah01/inputlock-extend.git
 cd inputlock
 open lockinput.xcodeproj
 ```
@@ -87,6 +91,7 @@ LockInput-1.0.dmg
 lockinput/
 ├── lockinputApp.swift        # Point d'entrée et barre de menus
 ├── ContentView.swift         # Interface du panneau principal
+├── SettingsView.swift        # Interface des réglages
 ├── InputMethodManager.swift  # Détection, changement et verrouillage des sources de saisie
 ├── InputSourceLockState.swift # Modèle d'état du verrouillage
 ├── LanguageManager.swift     # Changement de langue à l'exécution

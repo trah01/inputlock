@@ -14,6 +14,11 @@ class InputMethodManager: ObservableObject {
     private enum DefaultsKey {
         static let restorePreviousLockState = "restorePreviousLockState"
         static let previousLockedInputSourceID = "previousLockedInputSourceID"
+        static let temporaryInputSourceID = "temporaryInputSourceID"
+    }
+    private enum TemporaryInput {
+        static let idleRestoreInterval: TimeInterval = 5.0
+        static let retryInterval: TimeInterval = 0.5
     }
 
     @Published var isLocked = false
@@ -25,10 +30,10 @@ class InputMethodManager: ObservableObject {
     private var lockState = InputSourceLockState()
     private var notificationObservers: [NSObjectProtocol] = []
     private var enforcementTimer: Timer?
-    private var temporaryABCTimer: Timer?
+    private var temporaryInputTimer: Timer?
     private var isEnforcingLockedSource = false
-    private var isTemporarilyUsingABC = false
-    private var temporaryABCSourceID: String?
+    @Published private(set) var isTemporarilyUsingABC = false
+    private var temporaryInputSourceID: String?
 
     init() {
         loadAvailableInputSources()
@@ -44,7 +49,7 @@ class InputMethodManager: ObservableObject {
             NSWorkspace.shared.notificationCenter.removeObserver(observer)
         }
         enforcementTimer?.invalidate()
-        temporaryABCTimer?.invalidate()
+        temporaryInputTimer?.invalidate()
     }
 
     func loadAvailableInputSources() {
@@ -135,7 +140,7 @@ class InputMethodManager: ObservableObject {
         UserDefaults.standard.removeObject(forKey: DefaultsKey.previousLockedInputSourceID)
         syncPublishedLockState()
         stopEnforcementTimer()
-        stopTemporaryABCMode()
+        stopTemporaryInputMode()
     }
 
     func toggle() {
@@ -146,22 +151,28 @@ class InputMethodManager: ObservableObject {
         }
     }
 
-    func switchTemporarilyToABC() {
+    func switchTemporarilyToSelectedInputSource() {
+        if isTemporarilyUsingABC {
+            stopTemporaryInputMode()
+            enforceLockedInputSource()
+            return
+        }
+
         guard lockState.isLocked,
               let temporarySource = preferredTemporaryASCIISource() else {
             return
         }
 
         isTemporarilyUsingABC = true
-        temporaryABCTimer?.invalidate()
+        temporaryInputTimer?.invalidate()
 
         let temporarySourceID = getInputSourceID(temporarySource)
-        temporaryABCSourceID = temporarySourceID
+        temporaryInputSourceID = temporarySourceID
         if getCurrentInputSource().map(getInputSourceID) != temporarySourceID {
             _ = selectInputSource(temporarySource)
         }
 
-        scheduleTemporaryABCRestoreCheck(after: 15.0)
+        scheduleTemporaryInputRestoreCheck(after: TemporaryInput.idleRestoreInterval)
     }
 
     private func setupInputSourceChangeObservers() {
@@ -206,8 +217,8 @@ class InputMethodManager: ObservableObject {
 
         if isTemporarilyUsingABC,
            let currentSource = getCurrentInputSource(),
-           getInputSourceID(currentSource) != temporaryABCSourceID {
-            stopTemporaryABCMode()
+           getInputSourceID(currentSource) != temporaryInputSourceID {
+            stopTemporaryInputMode()
         }
 
         enforceLockedInputSource()
@@ -273,6 +284,12 @@ class InputMethodManager: ObservableObject {
     }
 
     private func preferredTemporaryASCIISource() -> TISInputSource? {
+        if let selectedSourceID = UserDefaults.standard.string(forKey: DefaultsKey.temporaryInputSourceID),
+           !selectedSourceID.isEmpty,
+           let selectedSource = inputSource(withID: selectedSourceID) {
+            return selectedSource
+        }
+
         let preferredInputSourceIDs = [
             "com.apple.keylayout.ABC",
             "com.apple.keylayout.US"
@@ -328,13 +345,13 @@ class InputMethodManager: ObservableObject {
         enforcementTimer = nil
     }
 
-    private func scheduleTemporaryABCRestoreCheck(after interval: TimeInterval) {
-        temporaryABCTimer?.invalidate()
-        temporaryABCTimer = Timer(timeInterval: interval, repeats: false) { [weak self] _ in
+    private func scheduleTemporaryInputRestoreCheck(after interval: TimeInterval) {
+        temporaryInputTimer?.invalidate()
+        temporaryInputTimer = Timer(timeInterval: interval, repeats: false) { [weak self] _ in
             self?.restoreLockedInputSourceWhenIdle()
         }
-        if let temporaryABCTimer {
-            RunLoop.main.add(temporaryABCTimer, forMode: .common)
+        if let temporaryInputTimer {
+            RunLoop.main.add(temporaryInputTimer, forMode: .common)
         }
     }
 
@@ -342,11 +359,11 @@ class InputMethodManager: ObservableObject {
         guard isTemporarilyUsingABC else { return }
 
         if isUserCurrentlyTyping {
-            scheduleTemporaryABCRestoreCheck(after: 0.5)
+            scheduleTemporaryInputRestoreCheck(after: TemporaryInput.retryInterval)
             return
         }
 
-        stopTemporaryABCMode()
+        stopTemporaryInputMode()
         enforceLockedInputSource()
     }
 
@@ -358,13 +375,13 @@ class InputMethodManager: ObservableObject {
 
         guard secondsSinceLastKeyDown >= 0 else { return true }
 
-        return secondsSinceLastKeyDown < 1.2
+        return secondsSinceLastKeyDown < TemporaryInput.idleRestoreInterval
     }
 
-    private func stopTemporaryABCMode() {
+    private func stopTemporaryInputMode() {
         isTemporarilyUsingABC = false
-        temporaryABCTimer?.invalidate()
-        temporaryABCTimer = nil
-        temporaryABCSourceID = nil
+        temporaryInputTimer?.invalidate()
+        temporaryInputTimer = nil
+        temporaryInputSourceID = nil
     }
 }
