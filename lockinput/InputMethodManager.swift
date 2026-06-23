@@ -26,7 +26,6 @@ class InputMethodManager: ObservableObject {
     private var notificationObservers: [NSObjectProtocol] = []
     private var enforcementTimer: Timer?
     private var temporaryABCTimer: Timer?
-    private var temporaryABCStartedAt: Date?
     private var isEnforcingLockedSource = false
     private var isTemporarilyUsingABC = false
     private var temporaryABCSourceID: String?
@@ -154,7 +153,6 @@ class InputMethodManager: ObservableObject {
         }
 
         isTemporarilyUsingABC = true
-        temporaryABCStartedAt = Date()
         temporaryABCTimer?.invalidate()
 
         let temporarySourceID = getInputSourceID(temporarySource)
@@ -353,8 +351,6 @@ class InputMethodManager: ObservableObject {
     }
 
     private var isUserCurrentlyTyping: Bool {
-        guard let temporaryABCStartedAt else { return false }
-
         let secondsSinceLastKeyDown = CGEventSource.secondsSinceLastEventType(
             .combinedSessionState,
             eventType: .keyDown
@@ -362,15 +358,13 @@ class InputMethodManager: ObservableObject {
 
         guard secondsSinceLastKeyDown >= 0 else { return true }
 
-        let elapsedSinceTemporarySwitch = Date().timeIntervalSince(temporaryABCStartedAt)
-        return secondsSinceLastKeyDown < 1.2 || secondsSinceLastKeyDown < elapsedSinceTemporarySwitch
+        return secondsSinceLastKeyDown < 1.2
     }
 
     private func stopTemporaryABCMode() {
         isTemporarilyUsingABC = false
         temporaryABCTimer?.invalidate()
         temporaryABCTimer = nil
-        temporaryABCStartedAt = nil
         temporaryABCSourceID = nil
     }
 }
