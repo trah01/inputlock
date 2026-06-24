@@ -47,7 +47,7 @@ LockInput 是一个轻量级 macOS 菜单栏应用，用于锁定当前输入法
 
 ## 与原项目的差异
 
-本仓库基于 [bigccc/inputlock](https://github.com/bigccc/inputlock) 继续维护，主要差异包括：
+本仓库基于 [bigccc/inputlock](https://github.com/bigccc/inputlock) 进行增强，主要差异包括：
 
 - 新增独立设置窗口，可通过状态栏主面板、右键菜单或 `Command + ,` 打开。
 - 临时切换快捷键从固定 ABC/ASCII 扩展为可配置的任意已启用输入法，未指定时自动回退到 ABC/US。
@@ -55,7 +55,7 @@ LockInput 是一个轻量级 macOS 菜单栏应用，用于锁定当前输入法
 - 支持重启后恢复上次锁定的输入法。
 - 精简状态栏主面板，只保留锁定状态、当前/锁定输入法、输入法列表和设置入口。
 - 固定菜单栏锁图标尺寸，避免锁定状态变化导致弹窗位置位移。
-- 补充应用图标资源，并将关于链接、安装链接和源码地址更新为 `trah01/inputlock-extend`。
+- 补充应用图标资源。
 
 ## 从源码运行
 
